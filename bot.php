@@ -10,16 +10,19 @@ use mydb\myDB;
 
 $iteration_count = 0;
 
-$telegram = new Api(env::$TELEGRAM_BOT_TOKEN);
+$telegram = new Api(env::$TELEGRAM_BOT_TOKEN2);
 $tgDbase = new myDB(env::class);
 
 
 class TGBot{
     public $telegram;
-    public function __construct($env)
+
+    public function __construct()
     {
-        $this->telegram = new Api($env::$TELEGRAM_BOT_TOKEN);
+        $this->telegram = new Api(env::$TELEGRAM_BOT_TOKEN2);
     }
+
+    function get_result(){return $this->telegram->getWebhookUpdates();}
     function sendMessage($chat_id, $message){
         $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'parse_mode' => 'HTML']);
     }
@@ -37,5 +40,4 @@ class TGBot{
 
 // composer require irazasyed/telegram-bot-sdk ^2.0
 //$ composer require vlucas/phpdotenv
-//https://api.telegram.org/bot5591524736:AAGXk3kxgnGrjpIeMvhMM_toBda5NQVTLnQ/setWebHook?url=
-//https://kkpsv3.evilcode.space/tg-bot.php
+//https://api.telegram.org/botTOKEN/setWebHook?url=HTTPSLINK
