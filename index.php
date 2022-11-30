@@ -39,21 +39,19 @@ function old_keywords_search($keywords, $haystack){
 }
 
 
-function old_bot_check_text_match($text, $keywords_1, $keywords_2, $answer){
+function old_bot_check_string_match($text, $keywords_1, $keywords_2, $answer){
     global $tgbot;
     /*  if text from message match with keywords - send message from message array  */
     if(old_keywords_search($keywords_1, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[0]);}
     else if(old_keywords_search($keywords_2, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[1]);}
 }
-if($text){old_bot_check_text_match($text, $key_words_1, $key_words_2, $answer);}
 
-function old_bot_check_caption_match($text, $keywords_1, $keywords_2, $answer){
-    global $tgbot;
-    /*  if caption from message match with keywords - send message from message array  */
-    if(old_keywords_search($keywords_1, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[0]);}
-    else if(old_keywords_search($keywords_2, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[1]);}
-}
-if($text){old_bot_check_caption_match($caption, $key_words_1, $key_words_2, $answer);}
+
+// start function if message contain only text
+if($text){old_bot_check_string_match($text, $key_words_1, $key_words_2, $answer);}
+
+// start function if message contain photo with caption
+if($caption){old_bot_check_string_match($caption, $key_words_1, $key_words_2, $answer);}
 
 
 
