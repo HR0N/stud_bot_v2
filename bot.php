@@ -26,7 +26,12 @@ class TGBot{
     function sendMessage($chat_id, $message){
         $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'parse_mode' => 'HTML']);
     }
-    function sendMessage_mark($chat_id, $message, $keyboard){
+    function sendMessage_mark($chat_id, $message){
+        $url = "https://t.me/mr_anders0n_bot";
+        $inline[] = ['text'=>'Перейти до реєстрації', 'url'=>$url];
+        $inline = array_chunk($inline, 2);
+        $reply_markup = ['inline_keyboard'=>$inline];
+        $keyboard = json_encode($reply_markup);
         $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_markup' => $keyboard,
             'parse_mode' => 'HTML']);
     }

@@ -20,6 +20,7 @@ if($result['message']['caption']){$caption = $result['message']['caption'];} // 
 
 
 // todo:                                                       . . : : first bot : : . .
+// 1 - respond to keywords match in basic chat ore in each when match ?
 
 $key_words_1 = ["математик", "дослідження операцій", "статистик", "економік", "фізик", "физик", "ймовірності", "тімс",
     "матаналіз", "курсов", "дипломн", "реферат", "презентаці", "статистиці", "філософі", "алгебр",
@@ -39,25 +40,43 @@ function old_keywords_search($keywords, $haystack){
 }
 
 
-function old_bot_check_string_match($text, $keywords_1, $keywords_2, $answer){
+function old_bot_check_string_match($text, $keywords_1, $keywords_2, $chat_id, $answer){
     global $tgbot;
-    /*  if text from message match with keywords - send message from message array  */
-    if(old_keywords_search($keywords_1, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[0]);}
-    else if(old_keywords_search($keywords_2, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[1]);}
+    /*  if chat ID belong basic group  */
+    if(intval($chat_id) === intval(env::$group_test_stud_bot_v2)){
+        /*  if text from message match with keywords - send message from message array  */
+        if(old_keywords_search($keywords_1, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[0]);}
+        else if(old_keywords_search($keywords_2, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[1]);}
+    }
 }
 
 
 // start function if message contain only text
-if($text){old_bot_check_string_match($text, $key_words_1, $key_words_2, $answer);}
+if($text){old_bot_check_string_match($text, $key_words_1, $key_words_2, $chat_id, $answer);}
 
 // start function if message contain photo with caption
-if($caption){old_bot_check_string_match($caption, $key_words_1, $key_words_2, $answer);}
+if($caption){old_bot_check_string_match($caption, $key_words_1, $key_words_2, $chat_id, $answer);}
 
 
 
 // todo:                                                       . . : : second bot : : . .
+// 1 - check all match include picture, ore only text message ?
 
 
+$key_words_second_bot = ["Реєстрація"];
 
 
+function check_string_match($text, $keywords, $chat_id){
+    global $tgbot;
+    /*  if chat ID belong basic group  */
+    if(intval($chat_id) === intval(env::$group_test_stud_bot_v2)) {
+        $message = "Щоб створити і заповнити форму, перейдіть в чат з нашим ботом і натисніть 'старт'.";
+        /*  if text from message match with keywords - send message from message array  */
+        if(old_keywords_search($keywords, $text)){$tgbot->sendMessage_mark(env::$group_test_stud_bot_v2, $message);}
+    }
+}
+
+
+// start function if message contain only text
+if($text){check_string_match($text, $key_words_second_bot, $chat_id);}
 
