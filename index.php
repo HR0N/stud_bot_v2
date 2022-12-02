@@ -11,6 +11,7 @@ $chat_id = env::$group_test_stud_bot_v2;
 /*  get data from message   */
 $result     =                      $tgbot->get_result();
 $chat_id    =          $result['message']['chat']['id'];
+$type       =        $result['message']['chat']['type'];
 $name       =    $result['message']['from']['username'];
 $first_name =  $result['message']['from']['first_name'];
 $last_name  =   $result['message']['from']['last_name'];
@@ -62,7 +63,7 @@ if($caption){old_bot_check_string_match($caption, $key_words_1, $key_words_2, $c
 // todo:                                                       . . : : second bot : : . .
 // 1 - check all match include picture, ore only text message ?
 
-
+$our_chats = [env::$group_test_stud_bot_v2, env::$group_test_stud_bot_v2, env::$group_test_stud_bot_v2];
 $key_words_second_bot = ["Реєстрація"];
 
 
@@ -76,7 +77,27 @@ function check_string_match($text, $keywords, $chat_id){
     }
 }
 
+/*  exclude our chats to define private chat with bot   */
+function exclude_chats($chat_id){
+    global $our_chats;
+    return is_numeric(array_search($chat_id, $our_chats)) ? false : true;
+}
+
+/*  ------------------------   */
+function form_fill(){
+    global $tgbot, $chat_id, $text, $result, $type;
+    if($_COOKIE['answers']){setcookie('answer', $_COOKIE['answers'].$text, time() + 10);}
+    else{setcookie('answer', $text, time() + 10);}
+
+    $tgbot->sendMessage($chat_id, $_COOKIE['answers']);
+}
+
 
 // start function if message contain only text
 if($text){check_string_match($text, $key_words_second_bot, $chat_id);}
+
+// private chat - /start
+if($type === "private"){form_fill();}
+
+
 
