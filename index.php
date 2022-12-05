@@ -2,15 +2,19 @@
 include_once('env.php');
 use env\Env as env;
 include_once "bot.php";
+include_once('db.php');
+use mydb\myDB as DB;
 
 
 $tgbot = new TGBot(env::$TELEGRAM_BOT_TOKEN2);
+$db = new DB(env::class);
 $chat_id = env::$group_test_stud_bot_v2;
 
 
 /*  get data from message   */
 $result     =                      $tgbot->get_result();
 $chat_id    =          $result['message']['chat']['id'];
+$from_id    =          $result['message']['from']['id'];
 $type       =        $result['message']['chat']['type'];
 $name       =    $result['message']['from']['username'];
 $first_name =  $result['message']['from']['first_name'];
@@ -84,20 +88,36 @@ function exclude_chats($chat_id){
 }
 
 /*  ------------------------   */
-function form_fill(){
-    global $tgbot, $chat_id, $text, $result, $type;
-    if($_COOKIE['answers']){setcookie('answer', $_COOKIE['answers'].$text, time() + 10);}
-    else{setcookie('answer', $text, time() + 10);}
-
-    $tgbot->sendMessage($chat_id, $_COOKIE['answers']);
+function form_fill($from_id){
+    global $db, $tgbot, $chat_id;
+    try {
+        $db->create_task_table($from_id);
+    } catch(Exception $e) {
+//        $tgbot->sendMessage($chat_id, "Error");
+    }
+    $task_table = $db->get_task_table($from_id);
+    if(strlen($task_table[1]) < 3){
+//        $db->set_task_table($from_id, 'start', true);
+        $tgbot->sendMessage($chat_id, "Заповніть пункт 1");
+    }else if(strlen($task_table[2]) < 3){
+        $tgbot->sendMessage($chat_id, "Заповніть пункт 2");
+    }else if(strlen($task_table[2]) < 3){
+        $tgbot->sendMessage($chat_id, "Заповніть пункт 3");
+    }
 }
 
+//$db->create_task_table(3453456);
+//$db->delete_table(3453456);
+
+echo '<pre>';
+echo var_dump($db->get_task_table(3453456));
+echo '</pre>';
 
 // start function if message contain only text
 if($text){check_string_match($text, $key_words_second_bot, $chat_id);}
 
 // private chat - /start
-if($type === "private"){form_fill();}
+if($text === "/start" && $type === "private"){form_fill($from_id);}
 
 
 
