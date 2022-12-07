@@ -83,5 +83,11 @@ class myDB{
         }
         return ($result);
     }
+    public function set_task_table($table_name, $item, $val){
+        $table_name = "table_".$table_name;
+        $sql = "UPDATE `user_task_table` SET `{$item}`='{$val}' WHERE `user_id`='{$table_name}'";
+        $result = $this->connect()->query($sql);
+        return ($result);
+    }
 }
 

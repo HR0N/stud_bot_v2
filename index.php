@@ -75,9 +75,9 @@ function check_string_match($text, $keywords, $chat_id){
     global $tgbot;
     /*  if chat ID belong basic group  */
     if(intval($chat_id) === intval(env::$group_test_stud_bot_v2)) {
-        $message = "Щоб створити і заповнити форму, перейдіть в чат з нашим ботом і натисніть 'старт'.";
+        $message = "Щоб створити і заповнити форму, перейдіть в чат з нашим ботом.";
         /*  if text from message match with keywords - send message from message array  */
-        if(old_keywords_search($keywords, $text)){$tgbot->sendMessage_mark(env::$group_test_stud_bot_v2, $message);}
+        if(old_keywords_search($keywords, $text)){$tgbot->sendMessage_mark_start_register(env::$group_test_stud_bot_v2, $message);}
     }
 }
 
@@ -88,36 +88,54 @@ function exclude_chats($chat_id){
 }
 
 /*  ------------------------   */
-function form_fill($from_id){
+function form_fill_start($from_id){
     global $db, $tgbot, $chat_id;
     try {
         $db->create_task_table($from_id);
     } catch(Exception $e) {
-//        $tgbot->sendMessage($chat_id, "Error");
     }
+    $db->set_task_table($from_id, 'cur_item', 1);
+    $db->set_task_table($from_id, 'start', true);
+    $tgbot->sendMessage($chat_id, "Заповніть пункт 1");
+}
+function form_fill($from_id){
+    global $db, $tgbot, $chat_id, $text, $result, $update;
     $task_table = $db->get_task_table($from_id);
-    if(strlen($task_table[1]) < 3){
-//        $db->set_task_table($from_id, 'start', true);
-        $tgbot->sendMessage($chat_id, "Заповніть пункт 1");
-    }else if(strlen($task_table[2]) < 3){
+
+
+    if($task_table[5] == 1){
+        $db->set_task_table($from_id, 'cur_item', 2);
+        $db->set_task_table($from_id, 'item1', $text);
         $tgbot->sendMessage($chat_id, "Заповніть пункт 2");
-    }else if(strlen($task_table[2]) < 3){
+    }else if($task_table[5] == 2){
+        $db->set_task_table($from_id, 'cur_item', 3);
+        $db->set_task_table($from_id, 'item2', $text);
         $tgbot->sendMessage($chat_id, "Заповніть пункт 3");
+    }else if($task_table[5] == 3){
+        $db->set_task_table($from_id, 'cur_item', 4);
+        $db->set_task_table($from_id, 'item3', $text);
+        sleep(1);
+        $task_table = $db->get_task_table($from_id);
+        $reply = "Ваша форма:\n {$task_table[2]} \n {$task_table[3]} \n {$task_table[4]} \n\n Надіслати адміністратору?";
+        $url = "https://t.me/mr_anders0n_bot";
+        $inline[] = [['text'=>'Так', 'callback_data' => 'send_yes'], ['text'=>'Ні', 'callback_data' => 'send_no']];
+//        $inline = array_chunk($inline, 2);
+        $reply_markup = ['keyboard'=>$inline];
+        $reply_markup2 = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
+        $keyboard = json_encode($reply_markup);
+        $tgbot->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup2, 'parse_mode' => 'HTML']);
     }
+
 }
 
-//$db->create_task_table(3453456);
-//$db->delete_table(3453456);
-
-echo '<pre>';
-echo var_dump($db->get_task_table(3453456));
-echo '</pre>';
 
 // start function if message contain only text
 if($text){check_string_match($text, $key_words_second_bot, $chat_id);}
 
 // private chat - /start
-if($text === "/start" && $type === "private"){form_fill($from_id);}
+if($text === "/start" && $type === "private"){form_fill_start($from_id);}
+// private chat - form fill
+else if($text && $type === "private"){form_fill($from_id);}
 
 
 
