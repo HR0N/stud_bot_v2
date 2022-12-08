@@ -1,3 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body{min-height: 200vh;}
+        .elem{
+            width: 100%;
+            height: 100px;
+            background-color: #69403a;
+            box-shadow: inset 0 0 40px black;
+            transition: ease-in-out all .5s;
+            transform: translate(0, var(--scrollTop));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: url("starring.png");
+        }
+        .text{
+            position: relative;
+            -webkit-background-clip: text;
+            color: transparent;
+            background-image: radial-gradient( circle 759px at -6.7% 50%,  rgba(80,131,73,1) 0%, rgba(140,209,131,1) 26.2%, rgba(178,231,170,1) 50.6%, rgba(144,213,135,1) 74.1%, rgba(75,118,69,1) 100.3% );
+            font-weight: bold;
+            font-size: 2.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="elem"><div class="text"></div></div>
+</body>
+<script>
+    window.addEventListener('scroll', e => {
+        document.body.style.cssText = `--scrollTop: ${this.scrollY}px`;
+        document.querySelector('.text').innerHTML = `${Math.round(this.scrollY)}px`;
+    });
+</script>
+</html>
 <?php
 include_once('env.php');
 use env\Env as env;
@@ -101,8 +143,7 @@ function form_fill_start($from_id){
 function form_fill($from_id){
     global $db, $tgbot, $chat_id, $text, $result, $update;
     $task_table = $db->get_task_table($from_id);
-
-
+    
     if($task_table[5] == 1){
         $db->set_task_table($from_id, 'cur_item', 2);
         $db->set_task_table($from_id, 'item1', $text);
@@ -117,13 +158,9 @@ function form_fill($from_id){
         sleep(1);
         $task_table = $db->get_task_table($from_id);
         $reply = "Ваша форма:\n {$task_table[2]} \n {$task_table[3]} \n {$task_table[4]} \n\n Надіслати адміністратору?";
-        $url = "https://t.me/mr_anders0n_bot";
         $inline[] = [['text'=>'Так', 'callback_data' => 'send_yes'], ['text'=>'Ні', 'callback_data' => 'send_no']];
-//        $inline = array_chunk($inline, 2);
-        $reply_markup = ['keyboard'=>$inline];
-        $reply_markup2 = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
-        $keyboard = json_encode($reply_markup);
-        $tgbot->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup2, 'parse_mode' => 'HTML']);
+        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
+        $tgbot->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup, 'parse_mode' => 'HTML']);
     }
 
 }
