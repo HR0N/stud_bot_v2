@@ -2,8 +2,6 @@
 
 namespace mydb;
 
-use function GuzzleHttp\Psr7\str;
-
 class myDB{
     private $mysql_host;
     private $mysql_user;
@@ -34,15 +32,13 @@ class myDB{
         $result = $this->connect()->query($sql);
         return ($result);
     }
-    public function get_task_table($table_name){
-        $table_name = "table_".$table_name;
-        $sql = "SELECT * FROM `user_task_table` WHERE `user_id`='{$table_name}'";
+    public function get_task_table($from_id){
+        $sql = "SELECT * FROM `user_task_table` WHERE `from_id`='{$from_id}'";
         $result = $this->connect()->query($sql);
         return mysqli_fetch_all($result)[0];
     }
-    public function create_table($table_name){
-        $table_name = "table_".$table_name;
-        $sql = "CREATE TABLE ".$table_name."(
+    public function create_table($from_id){
+        $sql = "CREATE TABLE ".$from_id."(
             id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
             item1 VARCHAR(30) NOT NULL,
             item2 VARCHAR(30) NOT NULL,
@@ -55,9 +51,8 @@ class myDB{
             echo "ERROR: Could not able to execute $sql. ";
         }
     }
-    public function delete_table($table_name){
-        $table_name = "table_".$table_name;
-        $delete= $this->connect()->query("DROP TABLE ".$table_name);
+    public function delete_table($from_id){
+        $delete= $this->connect()->query("DROP TABLE ".$from_id);
 
         if($delete !== FALSE)
         {
@@ -72,9 +67,8 @@ class myDB{
         $result = $this->connect()->query($sql);
         return ($result);
     }*/
-    public function create_task_table($table_name){
-        $table_name = "table_".$table_name;
-        $sql = "INSERT INTO `user_task_table`(`user_id`) VALUES(\"".$table_name."\")";
+    public function create_task_table($from_id){
+        $sql = "INSERT INTO `user_task_table`(`from_id`) VALUES(\"".$from_id."\")";
         $result = $this->connect()->query($sql);
         if($result){
             echo "Table created successfully.";
@@ -83,9 +77,8 @@ class myDB{
         }
         return ($result);
     }
-    public function set_task_table($table_name, $item, $val){
-        $table_name = "table_".$table_name;
-        $sql = "UPDATE `user_task_table` SET `{$item}`='{$val}' WHERE `user_id`='{$table_name}'";
+    public function set_task_table($from_id, $item, $val){
+        $sql = "UPDATE `user_task_table` SET `{$item}`='{$val}' WHERE `from_id`='{$from_id}'";
         $result = $this->connect()->query($sql);
         return ($result);
     }

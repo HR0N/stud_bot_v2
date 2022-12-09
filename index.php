@@ -50,7 +50,7 @@ use mydb\myDB as DB;
 
 $tgbot = new TGBot(env::$TELEGRAM_BOT_TOKEN2);
 $db = new DB(env::class);
-$chat_id = env::$group_test_stud_bot_v2;
+$env_chat_id = env::$group_test_stud_bot_v2;
 
 
 /*  get data from message   */
@@ -58,7 +58,7 @@ $result     =                      $tgbot->get_result();
 $chat_id    =          $result['message']['chat']['id'];
 $from_id    =          $result['message']['from']['id'];
 $type       =        $result['message']['chat']['type'];
-$name       =    $result['message']['from']['username'];
+$username       =    $result['message']['from']['username'];
 $first_name =  $result['message']['from']['first_name'];
 $last_name  =   $result['message']['from']['last_name'];
 if($result['message']['text'])         {$text = $result['message']['text'];} // check if message is text \ get text
@@ -99,10 +99,10 @@ function old_bot_check_string_match($text, $keywords_1, $keywords_2, $chat_id, $
 
 
 // start function if message contain only text
-if($text){old_bot_check_string_match($text, $key_words_1, $key_words_2, $chat_id, $answer);}
+//if($text){old_bot_check_string_match($text, $key_words_1, $key_words_2, $chat_id, $answer);}
 
 // start function if message contain photo with caption
-if($caption){old_bot_check_string_match($caption, $key_words_1, $key_words_2, $chat_id, $answer);}
+//if($caption){old_bot_check_string_match($caption, $key_words_1, $key_words_2, $chat_id, $answer);}
 
 
 
@@ -131,48 +131,88 @@ function exclude_chats($chat_id){
 
 /*  ------------------------   */
 function form_fill_start($from_id){
-    global $db, $tgbot, $chat_id;
+    global $db, $tgbot, $chat_id, $username;
     try {
         $db->create_task_table($from_id);
     } catch(Exception $e) {
     }
     $db->set_task_table($from_id, 'cur_item', 1);
     $db->set_task_table($from_id, 'start', true);
+    $db->set_task_table($from_id, 'username', $username);
     $tgbot->sendMessage($chat_id, "Заповніть пункт 1");
 }
 function form_fill($from_id){
     global $db, $tgbot, $chat_id, $text, $result, $update;
     $task_table = $db->get_task_table($from_id);
-    
+
     if($task_table[5] == 1){
         $db->set_task_table($from_id, 'cur_item', 2);
         $db->set_task_table($from_id, 'item1', $text);
         $tgbot->sendMessage($chat_id, "Заповніть пункт 2");
-    }else if($task_table[5] == 2){
+    }elseif($task_table[5] == 2){
         $db->set_task_table($from_id, 'cur_item', 3);
         $db->set_task_table($from_id, 'item2', $text);
         $tgbot->sendMessage($chat_id, "Заповніть пункт 3");
-    }else if($task_table[5] == 3){
+    }elseif($task_table[5] == 3){
         $db->set_task_table($from_id, 'cur_item', 4);
         $db->set_task_table($from_id, 'item3', $text);
         sleep(1);
         $task_table = $db->get_task_table($from_id);
         $reply = "Ваша форма:\n {$task_table[2]} \n {$task_table[3]} \n {$task_table[4]} \n\n Надіслати адміністратору?";
-        $inline[] = [['text'=>'Так', 'callback_data' => 'send_yes'], ['text'=>'Ні', 'callback_data' => 'send_no']];
+        $inline[] = [['text'=>'Так', 'callback_data'=>'sdfsdfsdf'], ['text'=>'Ні']];
         $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
         $tgbot->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $reply_markup, 'parse_mode' => 'HTML']);
+    }elseif($task_table[5] == 4 && $text == 'Так'){
+        $db->set_task_table($from_id, 'start', false);
+        $tgbot->sendMessage($chat_id, "Вашу заявку надіслано на розгляд адміністратору.");
     }
 
 }
 
+$update = json_decode(file_get_contents('php://input'), TRUE);
+
+
+if (isset($update['callback_query'])) {
+
+
+
+    $callback_query_data = $update['callback_query']['data'];
+    $message2 = $update["message"]["text"];
+    $chatId = $update["message"]["chat"]["id"];
+    $callback_query = $update['callback_query'];
+    $callback_query_data = $callback_query['data'];
+
+    if($update){
+        $tgbot->sendMessage(441246772, strval("msg2 ".$message2));
+        $tgbot->sendMessage(441246772, strval("chat id ".$chatId));
+        $tgbot->sendMessage(441246772, strval("query ".$callback_query));
+        $tgbot->sendMessage(441246772, strval("query data ".$callback_query_data));
+    }
+}
+
+if($text){
+    if($result){
+        $tgbot->sendMessage(441246772, strval($result));
+    }else{
+        $tgbot->sendMessage(441246772, strval("N O P E"));
+    }
+    $inline[] = ['text'=>'FUCK U CALLBACK', 'callback_data'=>'yesbitch'];
+    $inline = array_chunk($inline, 2);
+    $reply_markup = ['inline_keyboard'=>$inline];
+    $keyboard = json_encode($reply_markup);
+    $tgbot->telegram->sendMessage(['chat_id' => 441246772, 'text' => $text, 'reply_markup' => $keyboard]);
+}
+if($callback_query_data == 'yesbitch'){
+    $tgbot->sendMessage($chatId, 'data - yes');
+}
 
 // start function if message contain only text
-if($text){check_string_match($text, $key_words_second_bot, $chat_id);}
+//if($text){check_string_match($text, $key_words_second_bot, $chat_id);}
 
 // private chat - /start
-if($text === "/start" && $type === "private"){form_fill_start($from_id);}
+//if($text === "/start" && $type === "private"){form_fill_start($from_id);}
 // private chat - form fill
-else if($text && $type === "private"){form_fill($from_id);}
+//else if($text && $type === "private"){form_fill($from_id);}
 
 
 
