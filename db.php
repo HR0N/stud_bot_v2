@@ -33,7 +33,7 @@ class myDB{
         return ($result);
     }
     public function get_task_table($from_id){
-        $sql = "SELECT * FROM `user_task_table` WHERE `from_id`='{$from_id}'";
+        $sql = "SELECT * FROM `user_task_table` WHERE `from_id`='{$from_id}' ORDER BY `id` DESC";
         $result = $this->connect()->query($sql);
         return mysqli_fetch_all($result)[0];
     }
@@ -51,8 +51,8 @@ class myDB{
             echo "ERROR: Could not able to execute $sql. ";
         }
     }
-    public function delete_table($from_id){
-        $delete= $this->connect()->query("DROP TABLE ".$from_id);
+    public function delete_task($id){
+        $delete= $this->connect()->query("DELETE FROM `user_task_table` WHERE `id`=".$id);
 
         if($delete !== FALSE)
         {
@@ -79,6 +79,12 @@ class myDB{
     }
     public function set_task_table($from_id, $item, $val){
         $sql = "UPDATE `user_task_table` SET `{$item}`='{$val}' WHERE `from_id`='{$from_id}'";
+        $result = $this->connect()->query($sql);
+        return ($result);
+    }
+
+    public function set_task_table2($id, $item, $val){
+        $sql = "UPDATE `user_task_table` SET `{$item}`='{$val}' WHERE `id`='{$id}'";
         $result = $this->connect()->query($sql);
         return ($result);
     }
