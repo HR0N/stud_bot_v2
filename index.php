@@ -57,6 +57,7 @@ $update = json_decode(file_get_contents('php://input'), TRUE);
 $callback_query = $update['callback_query'];
 $callback_query_data = $callback_query['data'];
 $callback_chat_id = $callback_query["message"]["chat"]["id"];
+$callback_user = $update['callback_query']['from']['username'];
 /*  get data from message   */
 $result     =                      $tgbot->get_result();
 $chat_id    =          $result['message']['chat']['id'];
@@ -149,19 +150,19 @@ function form_fill($from_id){
     global $db, $tgbot, $chat_id, $text;
     $task_table = $db->get_task_table($from_id);
     if($task_table[5] == 1){
-        $db->set_task_table2($task_table[0], 'cur_item', 2);
-        $db->set_task_table2($task_table[0], 'item1', $text);
+        $db->set_task_table_by_id($task_table[0], 'cur_item', 2);
+        $db->set_task_table_by_id($task_table[0], 'item1', $text);
         $tgbot->sendMessage($chat_id, "Напишіть назву предмета.");
     }elseif($task_table[5] == 2){
-        $db->set_task_table2($task_table[0], 'cur_item', 3);
-        $db->set_task_table2($task_table[0], 'item2', $text);
+        $db->set_task_table_by_id($task_table[0], 'cur_item', 3);
+        $db->set_task_table_by_id($task_table[0], 'item2', $text);
         $tgbot->sendMessage($chat_id, "Напишіть термін виконання.");
     }elseif($task_table[5] == 3){
-        $db->set_task_table2($task_table[0], 'cur_item', 4);
-        $db->set_task_table2($task_table[0], 'item3', $text);
+        $db->set_task_table_by_id($task_table[0], 'cur_item', 4);
+        $db->set_task_table_by_id($task_table[0], 'item3', $text);
         sleep(1);
         $task_table = $db->get_task_table($from_id);
-        $reply = "Ваша форма:\n {$task_table[2]} \n {$task_table[3]} \n {$task_table[4]} \n\n Надіслати адміністратору?";
+        $reply = "Ваша форма:\n{$task_table[2]} \n{$task_table[3]} \n{$task_table[4]} \n\nНадіслати адміністратору?";
         $inline[] = [['text'=>'Так', 'callback_data'=>'yes send'], ['text'=>'Ні', 'callback_data'=>'no send']];
         // don't remove this
 //        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
@@ -175,7 +176,7 @@ function form_fill($from_id){
 function form_send_check($callback_chat_id, $callback_data){
     global $db, $tgbot, $result;
     $task_table = $db->get_task_table($callback_chat_id);
-    $db->set_task_table2($task_table[0], 'start', false);
+    $db->set_task_table_by_id($task_table[0], 'start', false);
     $task_table = $db->get_task_table($callback_chat_id);
     if($callback_data == 'yes send'){
         $tgbot->sendMessage($callback_chat_id, "Вашу заявку надіслано на розгляд адміністратору.");
@@ -189,13 +190,47 @@ function form_send_check($callback_chat_id, $callback_data){
 function create_form_message_to_admin_confirm($task){
     global $tgbot;
     $message  = "№ {$task[0]}\nАвтор @{$task[7]}\n\n{$task[2]}\n{$task[3]}\n{$task[4]}\n";
-    $inline[] = [['text'=>'Опублікувати', 'callback_data'=>'Publish'], ['text'=>'Видалити', 'callback_data'=>'Delete']];
+    $inline[] = [['text'=>'Опублікувати', 'callback_data'=>"confirm publish {$task[0]}"], ['text'=>'Видалити', 'callback_data'=>"confirm delete {$task[0]}"]];
     // don't remove this
 //        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
     $reply_markup = ['inline_keyboard'=>$inline];
     $keyboard = json_encode($reply_markup);
     $tgbot->telegram->sendMessage(['chat_id' => env::$group_stud_bot_v2_admin, 'text' => $message, 'reply_markup' => $keyboard, 'parse_mode' => 'HTML']);
 }
+
+/*  confirm\delete buttons  */
+function admin_form_confirm(){
+    global $db, $tgbot, $callback_chat_id, $callback_query_data;
+    $explosive = explode(' ', $callback_query_data);
+    $task_id = $explosive[2];
+    $confirm = $explosive[1] == 'publish' ? true : false;
+    if($confirm){
+        $task = $db->get_task_table_by_id($task_id);
+        if(strlen(strval($task[0])) > 0){
+            $message  = "№ {$task[0]}\n\n{$task[2]}\n{$task[3]}\n{$task[4]}\n";
+            $inline[] = [['text'=>'Запросити замовлення', 'callback_data'=>"accept order {$task[0]}"]];
+            // don't remove this
+//        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
+            $reply_markup = ['inline_keyboard'=>$inline];
+            $keyboard = json_encode($reply_markup);
+            $tgbot->telegram->sendMessage(['chat_id' => env::$group_stud_bot_v2_work, 'text' => $message, 'reply_markup' => $keyboard, 'parse_mode' => 'HTML']);
+        }else{$tgbot->sendMessage(env::$group_stud_bot_v2_admin, 'Замовлення вже видалено.');}
+    }elseif(!$confirm){
+        $tgbot->sendMessage(env::$group_stud_bot_v2_admin, "Замовлення видалено!");
+        $db->delete_task($task_id);
+    }
+}
+
+/*  accept order button  */
+function accept_order(){
+    global $db, $tgbot, $callback_chat_id, $callback_query_data, $callback_user;
+    $explosive = explode(' ', $callback_query_data);
+    $task_id = $explosive[2];
+    $task = $db->get_task_table_by_id($task_id);
+    $message = "Запит на замовлення!\n\nЗамовник @{$task[7]}\nХоче виконати @{$callback_user}\n\nОпис замовлення: \n$task[2]\n$task[3]\n$task[4]";
+    $tgbot->sendMessage(env::$group_stud_bot_v2_admin, $message);
+}
+
 
 echo '<pre>';
 echo var_dump(($db->get_task_table(441246772)));
@@ -211,5 +246,8 @@ else if($type === "private"){form_fill($from_id);}
 
 // update - check is form send to admin
 if($callback_query_data == 'yes send' || $callback_query_data == 'no send'){form_send_check($callback_chat_id, $callback_query_data);}
-
+// update - admin confirm\dismiss
+if(is_numeric(strripos(mb_strtolower($callback_query_data), mb_strtolower('confirm')))){admin_form_confirm();}
+// update - accept order =>
+if(is_numeric(strripos(mb_strtolower($callback_query_data), mb_strtolower('accept order')))){accept_order();}
 

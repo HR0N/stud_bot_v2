@@ -37,6 +37,11 @@ class myDB{
         $result = $this->connect()->query($sql);
         return mysqli_fetch_all($result)[0];
     }
+    public function get_task_table_by_id($id){
+        $sql = "SELECT * FROM `user_task_table` WHERE `id`='{$id}'";
+        $result = $this->connect()->query($sql);
+        return mysqli_fetch_all($result)[0];
+    }
     public function create_table($from_id){
         $sql = "CREATE TABLE ".$from_id."(
             id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
@@ -83,7 +88,7 @@ class myDB{
         return ($result);
     }
 
-    public function set_task_table2($id, $item, $val){
+    public function set_task_table_by_id($id, $item, $val){
         $sql = "UPDATE `user_task_table` SET `{$item}`='{$val}' WHERE `id`='{$id}'";
         $result = $this->connect()->query($sql);
         return ($result);
