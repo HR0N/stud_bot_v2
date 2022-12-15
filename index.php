@@ -48,9 +48,9 @@ include_once('db.php');
 use mydb\myDB as DB;
 
 
-$tgbot = new TGBot(env::$TELEGRAM_BOT_TOKEN2);
+$tgbot = new TGBot(env::$TELEGRAM_BOT_TOKEN);
 $db = new DB(env::class);
-$env_chat_id = env::$group_test_stud_bot_v2;
+$env_chat_id = env::$stud_group;
 
 
 $update = json_decode(file_get_contents('php://input'), TRUE);
@@ -70,14 +70,15 @@ if($result['message']['text'])         {$text = $result['message']['text'];} // 
 if($result['message']['caption']){$caption = $result['message']['caption'];} // check if message is image with caption \ get caption
 
 
-
 // todo:                                                       . . : : first bot : : . .
 // 1 - respond to keywords match in basic chat ore in each when match ?
 
-$key_words_1 = ["математик", "дослідження операцій", "статистик", "економік", "фізик", "физик", "ймовірності", "тімс",
-    "матаналіз", "курсов", "дипломн", "реферат", "презентаці", "статистиці", "філософі", "алгебр",
-    "економетри", "економіці", "курсач", "численні методи", "численним методам"];
-$key_words_2 = ["допомога", "допоможе", "зробити", "виконати", "допомогти", "помогти", "помощь", "потрібен"];
+$key_words_1 = ["математик", "математиці", "ММДО", "дослідження операцій", "дослідженню операцій", "статистик", "економік",
+    "фізик", "физик", "ймовірності", "ймовірностей", "тімс", "матаналіз", "курсов", "дипломн", "реферат", "презентаці",
+    "статистиці", "алгебр", "економетри", "кономіці", "курсач", "економетрії", "численні методи", "численним методам",
+    "численним методам", "матан", "вероятности", "вероятностей"];
+$key_words_2 = ["допомога", "допоможе", "зробити", "виконати", "допомогти", "допоможіть", "допомогу", "потрібно",
+    "помогти", "зробить", "поможет", "помогите",  "помощь", "потрібен", "хелп", "зробіть", "виконує", "сделать"];
 
 $answer = ["Звертайтесь до @kakadesa", "Увага ! Дуже багато шахраїв ! Перевіряйте виконавців, які відгукнуться ( відгуки, гарантії, бот @ugodabot, робота наперед )"];
 
@@ -95,10 +96,10 @@ function old_keywords_search($keywords, $haystack){
 function old_bot_check_string_match($text, $keywords_1, $keywords_2, $chat_id, $answer){
     global $tgbot;
     /*  if chat ID belong basic group  */
-    if(intval($chat_id) === intval(env::$group_test_stud_bot_v2)){
+    if(intval($chat_id) === intval(env::$stud_group)){
         /*  if text from message match with keywords - send message from message array  */
-        if(old_keywords_search($keywords_1, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[0]);}
-        else if(old_keywords_search($keywords_2, $text)){$tgbot->sendMessage(env::$group_test_stud_bot_v2, $answer[1]);}
+        if(old_keywords_search($keywords_1, $text)){$tgbot->sendMessage(env::$stud_group, $answer[0]);}
+        else if(old_keywords_search($keywords_2, $text)){$tgbot->sendMessage(env::$stud_group, $answer[1]);}
     }
 }
 
@@ -114,24 +115,27 @@ if($caption){old_bot_check_string_match($caption, $key_words_1, $key_words_2, $c
 // todo:                                                       . . : : second bot : : . .
 // 1 - check all match include picture, ore only text message ?
 
-$our_chats = [env::$group_test_stud_bot_v2, env::$group_test_stud_bot_v2, env::$group_test_stud_bot_v2];
-$key_words_second_bot = ["Реєстрація", "Регистрация"];
+$key_words_second_bot = ["опір матеріалів", "опору", "опором" , "опору матеріалів", "ТММ", "теорії машин та механізмів", "теорія машин та механізмів",
+"хімія", "хімією", "хімії", "інформати", "програмуванн", "електроні", "база даних", "базами даних", "інвустування", "інвестиці",
+"функціональний аналіз", "функціональному аналізу", "функан", "управління інноваційною діяльністю",
+"управлінням інноваційною діяльністю", "теорії інформації та кодування", "теорія інформації та кодування",
+"інженерія програмного забезпечення", "будівельних конструкцій", "будівельні конструкції", "тзео", "фінансовий аналіз",
+"фінансового аналізу", "фінансовим аналізом", "електротехні", "тое", "матеріалознавств", "логісти", "моделюванн",
+"архітектурні конструкції та креслення", "механі", "технологія будівельного виробництва",
+"технологією будівельного виробництва", "інженерна графіка", "інженерною графікою", "інженерній графіці", "java", "pascal",
+"python", "c++", "c#", "менеджмент", "маркетинг", "біофізи", "біологі", "ТОЕ", "електротехні","метролог", "креслен", "будівництв",
+"англійськ", "філософі", "історі", "психологі", "французськ", "педагогі", "векторний аналіз", "тензорний аналіз",
+"векторного аналізу", "тензорного аналізу"];
 
 
 function check_string_match($text, $keywords, $chat_id){
     global $tgbot;
     /*  if chat ID belong basic group  */
-    if(intval($chat_id) === intval(env::$group_test_stud_bot_v2)) {
+    if(intval($chat_id) === intval(env::$stud_group)) {
         $message = "Щоб створити і заповнити форму, перейдіть в чат з нашим ботом.";
         /*  if text from message match with keywords - send message from message array  */
-        if(old_keywords_search($keywords, $text)){$tgbot->sendMessage_mark_start_register(env::$group_test_stud_bot_v2, $message);}
+        if(old_keywords_search($keywords, $text)){$tgbot->sendMessage_mark_start_register(env::$stud_group, $message);}
     }
-}
-
-/*  exclude our chats to define private chat with bot   */
-function exclude_chats($chat_id){
-    global $our_chats;
-    return is_numeric(array_search($chat_id, $our_chats)) ? false : true;
 }
 
 /*  ------------------------   */
@@ -189,7 +193,7 @@ function form_send_check($callback_chat_id, $callback_data){
 /*  create message for admin group  */
 function create_form_message_to_admin_confirm($task){
     global $tgbot;
-    $message  = "№ {$task[0]}\nАвтор @{$task[7]}\n\n{$task[2]}\n{$task[3]}\n{$task[4]}\n";
+    $message  = "№ {$task[0]}\nАвтор @{$task[7]}\n\nТип роботи: {$task[2]}\nПредмет: {$task[3]}\nТерміни: {$task[4]}\n";
     $inline[] = [['text'=>'Опублікувати', 'callback_data'=>"confirm publish {$task[0]}"], ['text'=>'Видалити', 'callback_data'=>"confirm delete {$task[0]}"]];
     // don't remove this
 //        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
@@ -207,8 +211,8 @@ function admin_form_confirm(){
     if($confirm){
         $task = $db->get_task_table_by_id($task_id);
         if(strlen(strval($task[0])) > 0){
-            $message  = "№ {$task[0]}\n\n{$task[2]}\n{$task[3]}\n{$task[4]}\n";
-            $inline[] = [['text'=>'Запросити замовлення', 'callback_data'=>"accept order {$task[0]}"]];
+            $message  = "№ {$task[0]}\n\nТип роботи: {$task[2]}\nПредмет: {$task[3]}\nТерміни: {$task[4]}\n";
+            $inline[] = [['text'=>'Взяти замовлення', 'callback_data'=>"accept order {$task[0]}"]];
             // don't remove this
 //        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
             $reply_markup = ['inline_keyboard'=>$inline];
@@ -231,10 +235,6 @@ function accept_order(){
     $tgbot->sendMessage(env::$group_stud_bot_v2_admin, $message);
 }
 
-
-echo '<pre>';
-echo var_dump(($db->get_task_table(441246772)));
-echo '</pre>';
 
 // start function if message contain only text
 if($text){check_string_match($text, $key_words_second_bot, $chat_id);}

@@ -10,7 +10,7 @@ use mydb\myDB;
 
 $iteration_count = 0;
 
-$telegram = new Api(env::$TELEGRAM_BOT_TOKEN2);
+$telegram = new Api(env::$TELEGRAM_BOT_TOKEN);
 $tgDbase = new myDB(env::class);
 
 
@@ -19,7 +19,7 @@ class TGBot{
 
     public function __construct()
     {
-        $this->telegram = new Api(env::$TELEGRAM_BOT_TOKEN2);
+        $this->telegram = new Api(env::$TELEGRAM_BOT_TOKEN);
     }
 
     function get_result(){return $this->telegram->getWebhookUpdates();}
@@ -31,8 +31,8 @@ class TGBot{
             'parse_mode' => 'HTML']);
     }
     function sendMessage_mark_start_register($chat_id, $message){
-        $url = "https://t.me/mr_anders0n_bot";
-        $inline[] = ['text'=>'Перейти до реєстрації', 'url'=>$url];
+        $url = "https://t.me/helper_stud_bot";
+        $inline[] = ['text'=>'Заповнити форму', 'url'=>$url];
         $inline = array_chunk($inline, 2);
         $reply_markup = ['inline_keyboard'=>$inline];
         $keyboard = json_encode($reply_markup);
@@ -59,3 +59,4 @@ class TGBot{
 // composer require irazasyed/telegram-bot-sdk ^2.0
 //$ composer require vlucas/phpdotenv
 //https://api.telegram.org/botTOKEN/setWebHook?url=HTTPSLINK
+//https://api.telegram.org/bot5480236027:AAFVSKP_ujUosykr0YlRCkmT1Hj4-HGSNmA/setWebHook?url=https://bot.help-study2021.online/index.php
