@@ -231,7 +231,7 @@ function accept_order(){
 }
 
 // start function if message contain only text
-if($text && old_keywords_search($key_words_second_bot, $text) && !old_keywords_search($key_words_2, $text)){check_string_match($text, $key_words_second_bot, $chat_id);}
+if($text && old_keywords_search($key_words_second_bot, $text)){check_string_match($text, $key_words_second_bot, $chat_id);}
 else{
 
 // start function if message contain only text
