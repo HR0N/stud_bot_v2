@@ -80,7 +80,8 @@ $key_words_1 = ["математик", "математиці", "ММДО", "до�
 $key_words_2 = ["допомога", "допоможе", "зробити", "виконати", "допомогти", "допоможіть", "допомогу", "потрібно",
     "помогти", "зробить", "поможет", "помогите",  "помощь", "потрібен", "хелп", "зробіть", "виконує", "сделать"];
 
-$answer = ["Звертайтесь до @kakadesa", "Увага ! Дуже багато шахраїв ! Перевіряйте виконавців, які відгукнуться ( відгуки, гарантії, бот @ugodabot, робота наперед )"];
+$answer = ["Звертайтесь до @kakadesa", "Увага❗️Багато шахраїв ❗️ Перевіряйте виконавців 🧐 ( відгуки, бот @ugodabot, робота наперед )
+Шахраї тут ⏩ @sh_stop"];
 
 
 /*  search keywords and message text match  */
@@ -104,12 +105,6 @@ function old_bot_check_string_match($text, $keywords_1, $keywords_2, $chat_id, $
 }
 
 
-// start function if message contain only text
-if($text){old_bot_check_string_match($text, $key_words_1, $key_words_2, $chat_id, $answer);}
-
-// start function if message contain photo with caption
-if($caption){old_bot_check_string_match($caption, $key_words_1, $key_words_2, $chat_id, $answer);}
-
 
 
 // todo:                                                       . . : : second bot : : . .
@@ -132,7 +127,7 @@ function check_string_match($text, $keywords, $chat_id){
     global $tgbot;
     /*  if chat ID belong basic group  */
     if(intval($chat_id) === intval(env::$stud_group)) {
-        $message = "Щоб створити і заповнити форму, перейдіть в чат з нашим ботом.";
+        $message = "Щоб сформувати замовлення перейдіть в чат з нашим ботом";
         /*  if text from message match with keywords - send message from message array  */
         if(old_keywords_search($keywords, $text)){$tgbot->sendMessage_mark_start_register(env::$stud_group, $message);}
     }
@@ -235,9 +230,17 @@ function accept_order(){
     $tgbot->sendMessage(env::$group_stud_bot_v2_admin, $message);
 }
 
+// start function if message contain only text
+if($text && old_keywords_search($key_words_second_bot, $text) && !old_keywords_search($key_words_2, $text)){check_string_match($text, $key_words_second_bot, $chat_id);}
+else{
 
 // start function if message contain only text
-if($text){check_string_match($text, $key_words_second_bot, $chat_id);}
+    if($text){old_bot_check_string_match($text, $key_words_1, $key_words_2, $chat_id, $answer);}
+
+// start function if message contain photo with caption
+    if($caption){old_bot_check_string_match($caption, $key_words_1, $key_words_2, $chat_id, $answer);}
+}
+
 
 // private chat - /start
 if($text === "/start" && $type === "private"){form_fill_start($from_id);}
