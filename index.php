@@ -62,8 +62,9 @@ $callback_user = $update['callback_query']['from']['username'];
 $result     =                      $tgbot->get_result();
 $chat_id    =          $result['message']['chat']['id'];
 $from_id    =          $result['message']['from']['id'];
+$message_id =          $result['message']['message_id'];
 $type       =        $result['message']['chat']['type'];
-$username       =    $result['message']['from']['username'];
+$username   =    $result['message']['from']['username'];
 $first_name =  $result['message']['from']['first_name'];
 $last_name  =   $result['message']['from']['last_name'];
 if($result['message']['text'])         {$text = $result['message']['text'];} // check if message is text \ get text
@@ -95,11 +96,11 @@ function old_keywords_search($keywords, $haystack){
 
 
 function old_bot_check_string_match($text, $keywords_1, $keywords_2, $chat_id, $answer){
-    global $tgbot;
+    global $tgbot, $message_id;
     /*  if chat ID belong basic group  */
     if(intval($chat_id) === intval(env::$stud_group)){
         /*  if text from message match with keywords - send message from message array  */
-        if(old_keywords_search($keywords_1, $text)){$tgbot->sendMessage(env::$stud_group, $answer[0]);}
+        if(old_keywords_search($keywords_1, $text)){$tgbot->replyMessage(env::$stud_group, $answer[0], $message_id);}
         else if(old_keywords_search($keywords_2, $text)){$tgbot->sendMessage(env::$stud_group, $answer[1]);}
     }
 }
@@ -124,12 +125,12 @@ $key_words_second_bot = ["опір матеріалів", "опору", "опо�
 
 
 function check_string_match($text, $keywords, $chat_id){
-    global $tgbot;
+    global $tgbot, $message_id;
     /*  if chat ID belong basic group  */
     if(intval($chat_id) === intval(env::$stud_group)) {
         $message = "Щоб сформувати замовлення перейдіть в чат з нашим ботом";
         /*  if text from message match with keywords - send message from message array  */
-        if(old_keywords_search($keywords, $text)){$tgbot->sendMessage_mark_start_register(env::$stud_group, $message);}
+        if(old_keywords_search($keywords, $text)){$tgbot->replyMessage_mark_start_register(env::$stud_group, $message, $message_id);}
     }
 }
 
@@ -233,7 +234,6 @@ function accept_order(){
 // start function if message contain only text
 if($text && old_keywords_search($key_words_second_bot, $text)){check_string_match($text, $key_words_second_bot, $chat_id);}
 else{
-
 // start function if message contain only text
     if($text){old_bot_check_string_match($text, $key_words_1, $key_words_2, $chat_id, $answer);}
 

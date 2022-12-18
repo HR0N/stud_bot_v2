@@ -26,6 +26,9 @@ class TGBot{
     function sendMessage($chat_id, $message){
         $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'parse_mode' => 'HTML']);
     }
+    function replyMessage($chat_id, $message, $message_id){
+        $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_to_message_id' => $message_id, 'parse_mode' => 'HTML']);
+    }
     function sendMessage_mark($chat_id, $message, $keyboard){
         $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_markup' => $keyboard,
             'parse_mode' => 'HTML']);
@@ -37,6 +40,15 @@ class TGBot{
         $reply_markup = ['inline_keyboard'=>$inline];
         $keyboard = json_encode($reply_markup);
         $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_markup' => $keyboard,
+            'parse_mode' => 'HTML']);
+    }
+    function replyMessage_mark_start_register($chat_id, $message, $message_id){
+        $url = "https://t.me/helper_stud_bot";
+        $inline[] = ['text'=>'Заповнити форму', 'url'=>$url];
+        $inline = array_chunk($inline, 2);
+        $reply_markup = ['inline_keyboard'=>$inline];
+        $keyboard = json_encode($reply_markup);
+        $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_to_message_id' => $message_id, 'reply_markup' => $keyboard,
             'parse_mode' => 'HTML']);
     }
     function sendMessage_mark_ConfirmForm($chat_id, $message){
