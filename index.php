@@ -223,10 +223,12 @@ function admin_form_confirm(){
 
 /*  accept order button  */
 function accept_order(){
-    global $db, $tgbot, $callback_chat_id, $callback_query_data, $callback_user;
+    global $db, $tgbot, $callback_chat_id, $callback_query_data, $callback_user, $first_name;
     $explosive = explode(' ', $callback_query_data);
     $task_id = $explosive[2];
     $task = $db->get_task_table_by_id($task_id);
+    $message2 = "Замовлення взято, {$first_name} ми вам напишемо";
+    $tgbot->sendMessage(env::$group_stud_bot_v2_work, $message2);
     $message = "Запит на замовлення!\n\nЗамовник @{$task[7]}\nХоче виконати @{$callback_user}\n\nОпис замовлення: \n$task[2]\n$task[3]\n$task[4]";
     $tgbot->sendMessage(env::$group_stud_bot_v2_admin, $message);
 }
