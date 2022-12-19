@@ -229,7 +229,7 @@ function accept_order(){
     $task = $db->get_task_table_by_id($task_id);
     $message2 = "Замовлення взято, {$first_name} ми вам напишемо";
     $tgbot->sendMessage(env::$group_stud_bot_v2_work, $message2);
-    $message = "Запит на замовлення!\n\nЗамовник @{$task[7]}\nХоче виконати @{$callback_user}\n\nОпис замовлення: \n$task[2]\n$task[3]\n$task[4]";
+    $message = "Запит на замовлення!\n\n№ {$task[0]}\nЗамовник @{$task[7]}\nХоче виконати @{$callback_user}\n\nОпис замовлення: \n$task[2]\n$task[3]\n$task[4]";
     $tgbot->sendMessage(env::$group_stud_bot_v2_admin, $message);
 }
 
