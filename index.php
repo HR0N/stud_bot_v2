@@ -54,10 +54,11 @@ $env_chat_id = env::$stud_group;
 
 
 $update = json_decode(file_get_contents('php://input'), TRUE);
-$callback_query = $update['callback_query'];
-$callback_query_data = $callback_query['data'];
-$callback_chat_id = $callback_query["message"]["chat"]["id"];
-$callback_user = $update['callback_query']['from']['username'];
+$callback_query     =                        $update['callback_query'];
+$callback_query_data =                         $callback_query['data'];
+$callback_chat_id    =        $callback_query["message"]["chat"]["id"];
+$callback_user       =   $update['callback_query']['from']['username'];
+$callback_first_name = $update['callback_query']['from']['first_name'];
 /*  get data from message   */
 $result     =                      $tgbot->get_result();
 $chat_id    =          $result['message']['chat']['id'];
@@ -69,6 +70,7 @@ $first_name =  $result['message']['from']['first_name'];
 $last_name  =   $result['message']['from']['last_name'];
 if($result['message']['text'])         {$text = $result['message']['text'];} // check if message is text \ get text
 if($result['message']['caption']){$caption = $result['message']['caption'];} // check if message is image with caption \ get caption
+
 
 
 // todo:                                                       . . : : first bot : : . .
@@ -133,6 +135,7 @@ function check_string_match($text, $keywords, $chat_id){
         if(old_keywords_search($keywords, $text)){$tgbot->replyMessage_mark_start_register(env::$stud_group, $message, $message_id);}
     }
 }
+
 
 /*  ------------------------   */
 function form_fill_start($from_id){
@@ -223,11 +226,12 @@ function admin_form_confirm(){
 
 /*  accept order button  */
 function accept_order(){
-    global $db, $tgbot, $callback_chat_id, $callback_query_data, $callback_user, $first_name;
+    global $db, $tgbot, $callback_chat_id, $callback_query_data, $callback_user, $first_name, $callback_first_name;
+//    $tgbot->sendMessage('-645978616', $callback_query_data);
     $explosive = explode(' ', $callback_query_data);
     $task_id = $explosive[2];
     $task = $db->get_task_table_by_id($task_id);
-    $message2 = "Замовлення взято, {$first_name} ми вам напишемо";
+    $message2 = "Замовлення взято, {$callback_first_name} ми вам напишемо";
     $tgbot->sendMessage(env::$group_stud_bot_v2_work, $message2);
     $message = "Запит на замовлення!\n\n№ {$task[0]}\nЗамовник @{$task[7]}\nХоче виконати @{$callback_user}\n\nОпис замовлення: \n$task[2]\n$task[3]\n$task[4]";
     $tgbot->sendMessage(env::$group_stud_bot_v2_admin, $message);
@@ -256,3 +260,13 @@ if(is_numeric(strripos(mb_strtolower($callback_query_data), mb_strtolower('confi
 // update - accept order =>
 if(is_numeric(strripos(mb_strtolower($callback_query_data), mb_strtolower('accept order')))){accept_order();}
 
+
+
+
+
+
+
+/*if($update){
+    $tgbot->sendMessage('-645978616', $callback_query_data);
+//    $tgbot->telegram->sendMessage(['chat_id' => $callback_chat_id, 'text' => $message, 'reply_markup' => $keyboard, 'parse_mode' => 'HTML']);
+}*/
