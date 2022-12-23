@@ -210,8 +210,10 @@ function admin_form_confirm(){
     if($confirm){
         $task = $db->get_task_table_by_id($task_id);
         if(strlen(strval($task[0])) > 0){
+            $url = "https://t.me/kakadesa";
             $message  = "№ {$task[0]}\n\nТип роботи: {$task[2]}\nПредмет: {$task[3]}\nТерміни: {$task[4]}\n";
-            $inline[] = [['text'=>'Взяти замовлення', 'callback_data'=>"accept order {$task[0]}"]];
+//            $inline[] = [['text'=>'Взяти замовлення', 'callback_data'=>"accept order {$task[0]}"]];
+            $inline[] = [['text'=>'Взяти замовлення', 'url'=>$url]];
             // don't remove this
 //        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
             $reply_markup = ['inline_keyboard'=>$inline];
@@ -262,6 +264,10 @@ if(is_numeric(strripos(mb_strtolower($callback_query_data), mb_strtolower('accep
 
 
 
+if($text === "/edit"){$tgbot->sendMessage(env::$stud_group, strval($result));}
+if($text === "/edit2"){
+    $tgbot->telegram->sendMessage()
+}
 
 
 
