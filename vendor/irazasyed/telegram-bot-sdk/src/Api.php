@@ -306,6 +306,40 @@ class Api
     }
 
     /**
+     * Send text messages.
+     *
+     * <code>
+     * $params = [
+     *   'chat_id'                  => '',
+     *   'text'                     => '',
+     *   'parse_mode'               => '',
+     *   'disable_web_page_preview' => '',
+     *   'reply_to_message_id'      => '',
+     *   'reply_markup'             => '',
+     * ];
+     * </code>
+     *
+     * @link https://core.telegram.org/bots/api#sendmessage
+     *
+     * @param array    $params
+     *
+     * @var int|string $params ['chat_id']
+     * @var string     $params ['text']
+     * @var string     $params ['parse_mode']
+     * @var bool       $params ['disable_web_page_preview']
+     * @var int        $params ['reply_to_message_id']
+     * @var string     $params ['reply_markup']
+     *
+     * @return Message
+     */
+    public function deleteMessage(array $params)
+    {
+        $response = $this->post('deleteMessage', $params);
+
+        return new Message($response->getDecodedBody());
+    }
+
+    /**
      * Forward messages of any kind.
      *
      * <code>

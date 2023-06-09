@@ -60,6 +60,11 @@ class TGBot{
         $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_markup' => $keyboard,
             'parse_mode' => 'HTML']);
     }
+
+
+    function deleteMessage($chat_id, $message_id){
+        $this->telegram->deleteMessage(['chat_id' => $chat_id, 'message_id' => $message_id]);
+    }
 }
 
 

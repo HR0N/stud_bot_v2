@@ -86,6 +86,9 @@ $key_words_2 = ["допомога", "допоможе", "зробити", "ви�
 $answer = ["Звертайтесь до @kakadesa", "Увага❗️Багато шахраїв ❗️ Перевіряйте виконавців 🧐 ( відгуки, бот @ugodabot, робота наперед )
 Шахраї тут ⏩ @sh_stop"];
 
+$strings_to_remove = ['+','++','+++','ЛС','Лс','лс','Пп','ПП','пп','я','пиши пп', 'в ЛС', 'в Лс', 'в лс', 'в ПП',
+ 'в Пп', 'в пп', 'го', 'Го', 'ГО'];
+
 
 /*  search keywords and message text match  */
 function old_keywords_search($keywords, $haystack){
@@ -105,6 +108,14 @@ function old_bot_check_string_match($text, $keywords_1, $keywords_2, $chat_id, $
         if(old_keywords_search($keywords_1, $text)){$tgbot->replyMessage(env::$stud_group, $answer[0], $message_id);}
         else if(old_keywords_search($keywords_2, $text)){$tgbot->sendMessage(env::$stud_group, $answer[1]);}
     }
+}
+
+function message_to_delete_search($keywords, $haystack){
+    $result = null;
+    foreach($keywords as $needle){
+        if(mb_strtolower($needle) == mb_strtolower($haystack)){$result = true;}
+    }
+    return $result;
 }
 
 
@@ -240,7 +251,8 @@ function accept_order(){
 }
 
 // start function if message contain only text
-if($text && old_keywords_search($key_words_second_bot, $text)){check_string_match($text, $key_words_second_bot, $chat_id);}
+if($text && message_to_delete_search($strings_to_remove, $text)){$tgbot->deleteMessage($chat_id, $message_id);}
+else if($text && old_keywords_search($key_words_second_bot, $text)){check_string_match($text, $key_words_second_bot, $chat_id);}
 else{
 // start function if message contain only text
     if($text){old_bot_check_string_match($text, $key_words_1, $key_words_2, $chat_id, $answer);}
@@ -264,10 +276,10 @@ if(is_numeric(strripos(mb_strtolower($callback_query_data), mb_strtolower('accep
 
 
 
-if($text === "/edit"){$tgbot->sendMessage(env::$stud_group, strval($result));}
+/*if($text === "/edit"){$tgbot->sendMessage(env::$stud_group, strval($result));}
 if($text === "/edit2"){
-    $tgbot->telegram->sendMessage()
-}
+    $tgbot->telegram->sendMessage();
+}*/
 
 
 
