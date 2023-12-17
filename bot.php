@@ -24,10 +24,10 @@ class TGBot{
 
     function get_result(){return $this->telegram->getWebhookUpdates();}
     function sendMessage($chat_id, $message){
-        $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'parse_mode' => 'HTML']);
+        return $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'parse_mode' => 'HTML']);
     }
     function replyMessage($chat_id, $message, $message_id){
-        $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_to_message_id' => $message_id, 'parse_mode' => 'HTML']);
+        return $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_to_message_id' => $message_id, 'parse_mode' => 'HTML']);
     }
     function sendMessage_mark($chat_id, $message, $keyboard){
         $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_markup' => $keyboard,
@@ -48,7 +48,7 @@ class TGBot{
         $inline = array_chunk($inline, 2);
         $reply_markup = ['inline_keyboard'=>$inline];
         $keyboard = json_encode($reply_markup);
-        $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_to_message_id' => $message_id, 'reply_markup' => $keyboard,
+        return $this->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $message, 'reply_to_message_id' => $message_id, 'reply_markup' => $keyboard,
             'parse_mode' => 'HTML']);
     }
     function sendMessage_mark_ConfirmForm($chat_id, $message){
@@ -64,6 +64,19 @@ class TGBot{
 
     function deleteMessage($chat_id, $message_id){
         $this->telegram->deleteMessage(['chat_id' => $chat_id, 'message_id' => $message_id]);
+    }
+
+    function sendButtonStart($chat_id){
+        // Создание виртуальной клавиатуры с кнопкой "START" и запуском команды /start
+        $keyboard = [
+            ['START']
+        ];
+        // Отправка виртуальной клавиатуры
+        $this->telegram->sendMessage([
+            'chat_id' => $chat_id,
+            'text' => 'Нажмите кнопку START для запуска команды /start.',
+            'reply_markup' => json_encode(['keyboard' => $keyboard, 'resize_keyboard' => true, 'one_time_keyboard' => true])
+        ]);
     }
 }
 

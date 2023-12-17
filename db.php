@@ -93,5 +93,18 @@ class myDB{
         $result = $this->connect()->query($sql);
         return ($result);
     }
+
+    public function get_deleting_messages(){
+        $sql = "SELECT * FROM `deleting_messages` WHERE `id`=1";
+        $result = $this->connect()->query($sql);
+        return mysqli_fetch_all($result)[0];
+    }
+
+    public function set_deleting_messages($messages){   // $messages = array || json
+        $data = json_encode($messages);
+        $sql = "UPDATE `deleting_messages` SET `messages`='".$data."', `id`=1";
+        $result = $this->connect()->query($sql);
+        return ($result);
+    }
 }
 

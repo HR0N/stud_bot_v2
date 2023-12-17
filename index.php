@@ -46,6 +46,7 @@ use env\Env as env;
 include_once "bot.php";
 include_once('db.php');
 use mydb\myDB as DB;
+use Telegram\Bot\Exceptions\TelegramResponseException;
 
 
 $tgbot = new TGBot(env::$TELEGRAM_BOT_TOKEN);
@@ -84,10 +85,64 @@ $key_words_2 = ["допомога", "допоможе", "зробити", "ви�
     "помогти", "зробить", "поможет", "помогите",  "помощь", "потрібен", "хелп", "зробіть", "виконує", "сделать"];
 
 $answer = ["Звертайтесь до @kakadesa", "Увага❗️Багато шахраїв ❗️ Перевіряйте виконавців 🧐 ( відгуки, бот @ugodabot, робота наперед )
-Шахраї тут ⏩ @sh_stop"];
+    Шахраї тут ⏩ @sh_stop"];
 
 $strings_to_remove = ['+','++','+++','ЛС','Лс','лс','Пп','ПП','пп','я','пиши пп', 'в ЛС', 'в Лс', 'в лс', 'в ПП',
- 'в Пп', 'в пп', 'го', 'Го', 'ГО'];
+    'в Пп', 'в пп', 'го', 'Го', 'ГО'];
+
+
+
+/*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Deleting Messages - - - - - -   */
+function save_msg_id($result){
+    global $db;
+    try {
+        $result_message_id = $result->getMessageId();
+        $json = [ 'messages' => [ 'last_bot_message_id' => $result_message_id, ], ];
+        $old_message_id = json_decode($db->get_deleting_messages()[1])->messages->last_bot_message_id; // | returns int
+        $db->set_deleting_messages($json);
+        check_bot_msg_id_difference($result_message_id, $old_message_id);
+    } catch (TelegramResponseException $exception) {    // TelegramResponseException must be imported
+        //continue;
+    }
+}
+function send_msg_and_save_id($chat_id, $message){
+    global $db, $tgbot;
+    $result = $tgbot->sendMessage($chat_id, $message);
+    try {
+        $result_message_id = $result->getMessageId();
+        $json = [ 'messages' => [ 'last_bot_message_id' => $result_message_id, ], ];
+        $old_message_id = json_decode($db->get_deleting_messages()[1])->messages->last_bot_message_id; // | returns int
+        $db->set_deleting_messages($json);
+        check_bot_msg_id_difference($result_message_id, $old_message_id);
+    } catch (TelegramResponseException $exception) {    // TelegramResponseException must be imported
+        //continue;
+    }
+}
+function reply_msg_and_save_id($chat_id, $message, $message_id){
+    global $db, $tgbot;
+    $result = $tgbot->replyMessage($chat_id, $message, $message_id);
+    try {
+        $result_message_id = $result->getMessageId();
+        $json = [ 'messages' => [ 'last_bot_message_id' => $result_message_id, ], ];
+
+        $old_message_id = json_decode($db->get_deleting_messages()[1])->messages->last_bot_message_id; // | returns int
+        $db->set_deleting_messages($json);
+        check_bot_msg_id_difference($result_message_id, $old_message_id);
+    } catch (TelegramResponseException $exception) {    // TelegramResponseException must be imported
+        //continue;
+    }
+}
+
+function check_bot_msg_id_difference($bot_message_id, $old_message_id){  //  only bot message
+    global $db, $tgbot, $chat_id;
+//    $tgbot->sendMessage($chat_id, "$bot_message_id - $old_message_id = ".$bot_message_id - $old_message_id);
+
+    if($bot_message_id - $old_message_id <= 3){
+        $tgbot->deleteMessage($chat_id, $old_message_id);
+    }
+}
+/*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - and Deleting Messages - - - -   */
+
 
 
 /*  search keywords and message text match  */
@@ -105,8 +160,8 @@ function old_bot_check_string_match($text, $keywords_1, $keywords_2, $chat_id, $
     /*  if chat ID belong basic group  */
     if(intval($chat_id) === intval(env::$stud_group)){
         /*  if text from message match with keywords - send message from message array  */
-        if(old_keywords_search($keywords_1, $text)){$tgbot->replyMessage(env::$stud_group, $answer[0], $message_id);}
-        else if(old_keywords_search($keywords_2, $text)){$tgbot->sendMessage(env::$stud_group, $answer[1]);}
+        if(old_keywords_search($keywords_1, $text)){reply_msg_and_save_id(env::$stud_group, $answer[0], $message_id);}
+        else if(old_keywords_search($keywords_2, $text)){send_msg_and_save_id(env::$stud_group, $answer[1]);}
     }
 }
 
@@ -143,7 +198,7 @@ function check_string_match($text, $keywords, $chat_id){
     if(intval($chat_id) === intval(env::$stud_group)) {
         $message = "Щоб сформувати замовлення перейдіть в чат з нашим ботом";
         /*  if text from message match with keywords - send message from message array  */
-        if(old_keywords_search($keywords, $text)){$tgbot->replyMessage_mark_start_register(env::$stud_group, $message, $message_id);}
+        if(old_keywords_search($keywords, $text)){$result = $tgbot->replyMessage_mark_start_register(env::$stud_group, $message, $message_id); save_msg_id($result);}
     }
 }
 
@@ -160,7 +215,7 @@ function form_fill_start($from_id){
     $db->set_task_table($from_id, 'username', $username);
     $tgbot->sendMessage($chat_id, "Напишіть тип роботи.");
 }
-function form_fill($from_id){
+function form_fill($from_id, $username){
     global $db, $tgbot, $chat_id, $text;
     $task_table = $db->get_task_table($from_id);
     if($task_table[5] == 1){
@@ -171,20 +226,35 @@ function form_fill($from_id){
         $db->set_task_table_by_id($task_table[0], 'cur_item', 3);
         $db->set_task_table_by_id($task_table[0], 'item2', $text);
         $tgbot->sendMessage($chat_id, "Напишіть термін виконання.");
-    }elseif($task_table[5] == 3){
+    }elseif($task_table[5] == 3 && strlen($username) >= 1){
         $db->set_task_table_by_id($task_table[0], 'cur_item', 4);
         $db->set_task_table_by_id($task_table[0], 'item3', $text);
-        sleep(1);
-        $task_table = $db->get_task_table($from_id);
-        $reply = "Ваша форма:\n{$task_table[2]} \n{$task_table[3]} \n{$task_table[4]} \n\nНадіслати адміністратору?";
-        $inline[] = [['text'=>'Так', 'callback_data'=>'yes send'], ['text'=>'Ні', 'callback_data'=>'no send']];
-        // don't remove this
-//        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
-        $reply_markup = ['inline_keyboard'=>$inline];
-        $keyboard = json_encode($reply_markup);
-        $tgbot->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $keyboard, 'parse_mode' => 'HTML']);
+        confirm_user_form_and_send_to_admin_group($from_id);
+    }elseif($task_table[5] == 3 && strlen($username) < 1){
+        $tgbot->sendMessage($chat_id, "Напишіть номер телефону або інший контакт для зв'язку.");
+        $db->set_task_table_by_id($task_table[0], 'cur_item', 4);
+        $db->set_task_table_by_id($task_table[0], 'item3', $text);
+    }elseif($task_table[5] == 4){
+        if(strlen($username) < 1){
+            $db->set_task_table_by_id($task_table[0], 'cur_item', 5);
+            $db->set_task_table_by_id($task_table[0], 'contact', $text);
+        }
+        confirm_user_form_and_send_to_admin_group($from_id);
     }
 
+}
+function  confirm_user_form_and_send_to_admin_group($from_id){
+    global $db, $tgbot, $chat_id, $username;
+    sleep(1);
+    $task_table = $db->get_task_table($from_id);
+    $contact = strlen($username) > 0 ? "" : "\n{$task_table[8]}";
+    $reply = "Ваша форма:\n{$task_table[2]} \n{$task_table[3]} \n{$task_table[4]}".$contact." \n\nНадіслати адміністратору?";
+    $inline[] = [['text'=>'Так, надіслати адміністратору', 'callback_data'=>'yes send'], ['text'=>'Ні', 'callback_data'=>'no send']];
+    // don't remove this
+//        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
+    $reply_markup = ['inline_keyboard'=>$inline];
+    $keyboard = json_encode($reply_markup);
+    $tgbot->telegram->sendMessage(['chat_id' => $chat_id, 'text' => $reply, 'reply_markup' => $keyboard, 'parse_mode' => 'HTML']);
 }
 /*  check update data before send   */
 function form_send_check($callback_chat_id, $callback_data){
@@ -193,7 +263,7 @@ function form_send_check($callback_chat_id, $callback_data){
     $db->set_task_table_by_id($task_table[0], 'start', false);
     $task_table = $db->get_task_table($callback_chat_id);
     if($callback_data == 'yes send'){
-        $tgbot->sendMessage($callback_chat_id, "Вашу заявку надіслано на розгляд адміністратору.");
+        $tgbot->sendMessage($callback_chat_id, "Ваше замовлення прийнято. Ми зв'яжемось з вами максимально швидко!");
         create_form_message_to_admin_confirm($task_table, $callback_chat_id);
     }elseif($callback_data == 'no send'){
         $tgbot->sendMessage($callback_chat_id, "Форму скасовано");
@@ -203,7 +273,8 @@ function form_send_check($callback_chat_id, $callback_data){
 /*  create message for admin group  */
 function create_form_message_to_admin_confirm($task){
     global $tgbot;
-    $message  = "№ {$task[0]}\nАвтор @{$task[7]}\n\nТип роботи: {$task[2]}\nПредмет: {$task[3]}\nТерміни: {$task[4]}\n";
+    $author = strlen($task[7]) > 0 ? "Автор @{$task[7]}" : "Контакт {$task[8]}";
+    $message  = "№ {$task[0]}\n".$author."\n\nТип роботи: {$task[2]}\nПредмет: {$task[3]}\nТерміни: {$task[4]}\n";
     $inline[] = [['text'=>'Опублікувати', 'callback_data'=>"confirm publish {$task[0]}"], ['text'=>'Видалити', 'callback_data'=>"confirm delete {$task[0]}"]];
     // don't remove this
 //        $reply_markup = $tgbot->telegram->replyKeyboardMarkup(['keyboard' => $inline, 'resize_keyboard' => true, 'one_time_keyboard' => true]);
@@ -265,7 +336,7 @@ else{
 // private chat - /start
 if($text === "/start" && $type === "private"){form_fill_start($from_id);}
 // private chat - form fill
-else if($type === "private"){form_fill($from_id);}
+else if($type === "private"){form_fill($from_id, $username);}
 
 // update - check is form send to admin
 if($callback_query_data == 'yes send' || $callback_query_data == 'no send'){form_send_check($callback_chat_id, $callback_query_data);}
@@ -276,15 +347,3 @@ if(is_numeric(strripos(mb_strtolower($callback_query_data), mb_strtolower('accep
 
 
 
-/*if($text === "/edit"){$tgbot->sendMessage(env::$stud_group, strval($result));}
-if($text === "/edit2"){
-    $tgbot->telegram->sendMessage();
-}*/
-
-
-
-
-/*if($update){
-    $tgbot->sendMessage('-645978616', $callback_query_data);
-//    $tgbot->telegram->sendMessage(['chat_id' => $callback_chat_id, 'text' => $message, 'reply_markup' => $keyboard, 'parse_mode' => 'HTML']);
-}*/
