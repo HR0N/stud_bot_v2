@@ -88,7 +88,8 @@ $answer = ["Звертайтесь до @kakadesa", "Увага❗️Багат�
     Шахраї тут ⏩ @sh_stop"];
 
 $strings_to_remove = ['+','++','+++','ЛС','Лс','лс','Пп','ПП','пп','я','пиши пп', 'в ЛС', 'в Лс', 'в лс', 'в ПП',
-    'в Пп', 'в пп', 'го', 'Го', 'ГО'];
+    'в Пп', 'в пп', 'го', 'Го', 'ГО', 'можу допомогти', 'го в лс', 'я можу', 'відпиши в лс', '++++', '+++++',
+    '++++++', 'пиши в лс'];
 
 
 
@@ -137,7 +138,7 @@ function check_bot_msg_id_difference($bot_message_id, $old_message_id){  //  onl
     global $db, $tgbot, $chat_id;
 //    $tgbot->sendMessage($chat_id, "$bot_message_id - $old_message_id = ".$bot_message_id - $old_message_id);
 
-    if($bot_message_id - $old_message_id <= 3){
+    if($bot_message_id - $old_message_id <= 2){
         $tgbot->deleteMessage($chat_id, $old_message_id);
     }
 }
