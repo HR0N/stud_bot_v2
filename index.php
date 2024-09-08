@@ -73,7 +73,6 @@ if($result['message']['text'])         {$text = $result['message']['text'];} // 
 if($result['message']['caption']){$caption = $result['message']['caption'];} // check if message is image with caption \ get caption
 
 
-
 // todo:                                                       . . : : first bot : : . .
 // 1 - respond to keywords match in basic chat ore in each when match ?
 
@@ -148,9 +147,12 @@ function check_bot_msg_id_difference($bot_message_id, $old_message_id){  //  onl
 
 /*  search keywords and message text match  */
 function old_keywords_search($keywords, $haystack){
-    $result = null;
+    $result = false;
     foreach($keywords as $needle){
-        if(is_numeric(strripos(mb_strtolower($haystack), mb_strtolower($needle)))){$result = true;}
+        if(mb_strripos(mb_strtolower($haystack), mb_strtolower($needle)) !== false){
+            $result = true;
+            break;
+        }
     }
     return $result;
 }
@@ -161,8 +163,14 @@ function old_bot_check_string_match($text, $keywords_1, $keywords_2, $chat_id, $
     /*  if chat ID belong basic group  */
     if(intval($chat_id) === intval(env::$stud_group)){
         /*  if text from message match with keywords - send message from message array  */
-        if(old_keywords_search($keywords_1, $text)){reply_msg_and_save_id(env::$stud_group, $answer[0], $message_id);}
-        else if(old_keywords_search($keywords_2, $text)){send_msg_and_save_id(env::$stud_group, $answer[1]);}
+        if(old_keywords_search($keywords_1, $text)){
+            reply_msg_and_save_id(env::$stud_group, $answer[0], $message_id);
+            
+        }
+        else if(old_keywords_search($keywords_2, $text)){
+            send_msg_and_save_id(env::$stud_group, $answer[1]);
+            
+        }
     }
 }
 
@@ -344,7 +352,7 @@ if($callback_query_data == 'yes send' || $callback_query_data == 'no send'){form
 // update - admin confirm\dismiss
 if(is_numeric(strripos(mb_strtolower($callback_query_data), mb_strtolower('confirm')))){admin_form_confirm();}
 // update - accept order =>
-if(is_numeric(strripos(mb_strtolower($callback_query_data), mb_strtolower('accept order')))){accept_order();}
+if(is_numeric(mb_strripos(mb_strtolower($callback_query_data), mb_strtolower('accept order')))){accept_order();}
 
 
 
