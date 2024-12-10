@@ -45,6 +45,7 @@ include_once('env.php');
 use env\Env as env;
 include_once "bot.php";
 include_once('db.php');
+include 'messages.php';
 use mydb\myDB as DB;
 use Telegram\Bot\Exceptions\TelegramResponseException;
 
@@ -83,14 +84,24 @@ $key_words_1 = ["математик", "математиці", "ММДО", "до�
 $key_words_2 = ["допомога", "допоможе", "зробити", "виконати", "допомогти", "допоможіть", "допомогу", "потрібно",
     "помогти", "зробить", "поможет", "помогите",  "помощь", "потрібен", "хелп", "зробіть", "виконує", "сделать"];
 
-$answer = ["Звертайтесь до @kakadesa", "Увага❗️Багато шахраїв ❗️ Перевіряйте виконавців 🧐 ( відгуки, бот @ugodabot, робота наперед )
-    Шахраї тут ⏩ @sh_stop"];
+$answer = [$message_01, $message_02];
 
 $strings_to_remove = ['+','++','+++','ЛС','Лс','лс','Пп','ПП','пп','я','пиши пп', 'в ЛС', 'в Лс', 'в лс', 'в ПП',
     'в Пп', 'в пп', 'го', 'Го', 'ГО', 'можу допомогти', 'го в лс', 'я можу', 'відпиши в лс', '++++', '+++++',
     '++++++', 'пиши в лс'];
 
 
+
+/*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - DEBUGGING - - - - - -   */
+function DEBUGGING(){
+    global $db, $tgbot, $chat_id, $text;
+    if(intval($chat_id) === intval(env::$dev_group)){
+        $tgbot->sendMessage(env::$dev_group, "test: " .$text);
+    }
+
+}
+//DEBUGGING();
+/*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - end of DEBUGGING - - - - - -   */
 
 /*  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - Deleting Messages - - - - - -   */
 function save_msg_id($result){
@@ -161,15 +172,17 @@ function old_keywords_search($keywords, $haystack){
 function old_bot_check_string_match($text, $keywords_1, $keywords_2, $chat_id, $answer){
     global $tgbot, $message_id;
     /*  if chat ID belong basic group  */
-    if(intval($chat_id) === intval(env::$stud_group)){
+    if(intval($chat_id) === intval(env::$stud_group) || intval($chat_id) === intval(env::$dev_group)){
         /*  if text from message match with keywords - send message from message array  */
         if(old_keywords_search($keywords_1, $text)){
-            reply_msg_and_save_id(env::$stud_group, $answer[0], $message_id);
-            
+//            reply_msg_and_save_id(env::$stud_group, $answer[0], $message_id);
+            reply_msg_and_save_id($chat_id, $answer[0], $message_id);
+
         }
         else if(old_keywords_search($keywords_2, $text)){
-            send_msg_and_save_id(env::$stud_group, $answer[1]);
-            
+//            send_msg_and_save_id(env::$stud_group, $answer[1]);
+            send_msg_and_save_id($chat_id, $answer[1]);
+
         }
     }
 }
@@ -204,7 +217,7 @@ $key_words_second_bot = ["опір матеріалів", "опору", "опо�
 function check_string_match($text, $keywords, $chat_id){
     global $tgbot, $message_id;
     /*  if chat ID belong basic group  */
-    if(intval($chat_id) === intval(env::$stud_group)) {
+    if(intval($chat_id) === intval(env::$stud_group) || intval($chat_id) === intval(env::$dev_group)){
         $message = "Щоб сформувати замовлення перейдіть в чат з нашим ботом";
         /*  if text from message match with keywords - send message from message array  */
         if(old_keywords_search($keywords, $text)){$result = $tgbot->replyMessage_mark_start_register(env::$stud_group, $message, $message_id); save_msg_id($result);}
